@@ -145,11 +145,52 @@ Hem de tenir en compte que quan hi ha un _canvi de context_ (canvi de procés a 
 
 Imaginem que **P1** entra a la CPU amb un temps de 53, es carrega el seu PCB i el rellotge del sistema comença  contar, quan arriba a 20 es llança una interrupció de rellotge. Es treu **P1** de la CPU, s'actualitza el seu PCB i el procés torna a la cua de READY. Ara entrarà **P2** a la CPU, que era el següent en la llista de ready, un cop passat el seu temps d'execució ja que TE(P2) < Q acabarà el procés, **P2** haurà acabat i farà exit, per tant anirà a estat ZOMBI o TERMINATED. Ara entrarà el procés **P3** que necessita un imput per a continuar, un cop passats 10q demana l'entrada, s'actualitzarà el seu PCB i passa a la cua de processos BLOCKED o WAITING, i llavors entra **P4** a la CPU i passa el mateix que amb **P1**. Es va seguint l'algoritme fins que tots els processos han acabat.
 
+------
+
+### Fi d'execució d'un procés (fill)
+
+> _void exit(int status);_
+> Causa un acabament normal del procés i es retorna el valor status al procés pare.
+
+Un procés pot acabar la seva execució de manera **voluntària** (exit) o **involuntària** (signals).
+
+Quan un procés vol acabar la seva execució (voluntàriament), alliberar els seus recursos i alliberar les estructures de kernel que té reservades per ell, s'executa la crida de sistema **exit**.
+
+Si volem sincronitzar el pare amb la finalització del seu/seus fill/s, podem utilitzar la crida a sistema **waitpid**  (veure apartat _COMANDOS -> waitpid_).
+
+El fill pot enviar informació de finalització (_exit code_) al pare a través de la crida al sistema **exit** i el pare la recull a través del _waitpid_.
+
+- El SO fa d'intermediari, guarda aquesta informació fins que el pare la consulta.
+- Mentre el pare no consulta aquesta informació, el PCB del fill no serà alliberat i el procés es queda en estat ZOMBIE.
+  - Convé fer waitpid dels processos que creem per tal d'alliberar els recursos ocupats del kernel.
+
+> Si un procés mor sense alliberar els PCBs dels fills, el procés init() del sistema ho farà.
+
 ## COMANDOS
 
 #### fork();
 
 > Crea un procés fill
+
+El pare i el fill s'executaràn concurrent-ment ("a la vegada"), es duplicarà el codi del pare juntament amb la pila i les seves dades i s'assignaràn al fill.
+
+[Per saber més sobre processos fills veure apartat **Processos fills** a **CONCEPTES BÀSICS**]
+
+**Mutació**
+_int execlp(const char *file, const char *arg, ...);_
+
+Al fer un fork, l'espai de direccións és el mateix. Si volem executar un altre codi, aquest procés fill ha de **mutar** (canviar el binari del procés).
+
+_execlp_: Fa canviar (mutar) l'executable d'un procés per un altre executable (però el procés segueix sent el mateix):
+
+- **Tot el contingut** de l'espai de direccións canvia, codis, dades, pila...
+  - Es reinicia el PC a la primera instrucció (main).
+- Es manté tot el que està relacionat amb **l'identitat del procés**.
+  - Contadors d'ús intern, signals pendents, etc...
+- Es modifiquen aspectes relacionats amb l'executable o l'espai de direccións:
+  - Es defineix per defecte la taula de signals (mask).
+
+------
 
 ### <u>SIGNALS</u>
 
@@ -263,7 +304,7 @@ Envia un event concret a un procé.
 
 _waitpid(pid_t pid, int *status, int options);_
 
-Aquesta crida a sistema s'utilitza per a esperar a un canvi d'estat d'un procés fill des del procés el qual fa la crida i obtenir la informació del fill el qual l'estat ha canviat. Un _canvi d'estat_ es considera: El fill ha acabat; el fill ha sigut parat per un signal; o el fill ha sigut reprès a través d'un signal. En el cas d'un fill que ha acabat, utilitzar el waitpid permet al sistema alliberar els recursos (PCB) associats amb aquest fill; si no es fa un wait/waitpid, el fill es queda en estat _zombie_.
+Aquesta crida a sistema s'utilitza per a esperar a un canvi d'estat d'un procés fill des del procés el qual fa la crida i obtenir la informació del fill el qual l'estat ha canviat. Un _canvi d'estat_ es considera: El fill ha acabat; el fill ha sigut parat per un signal; o el fill ha sigut reprès a través d'un signal. En el cas d'un fill que ha acabat, utilitzar el waitpid permet al sistema alliberar els recursos (PCB) associats amb aquest fill; si no es fa un wait/waitpid, el fill es queda en estat _zombie_ i no s'alliberarà l'espai del PCB del fill mort (per això es diu _zombie_).
 
 Executar aquesta comanda suspen l'execució del procés que fa la crida fins que un fill (especificat en el paràmetre _pid_) ha canviat d'estat. El paràmetre _pid_ pot ser:
 
@@ -285,5 +326,8 @@ Els valors de retorn del _waitpid_ són:
     - Exemple: Un fill en estat BLOCKED i un altre fill en estat READY.
 - <u>Error</u>: **Retorna -1**.
 
-------
+EXEMPLES MÉS COMUNS:
+
+- waitpid(-1, NULL, 0) --> Esperar (amb bloqueig si és necessari) a un fill qualsevol.
+- waitpid(pid_fill, NULL, 0) --> Esperar (amb bloqueig si és necessari) a un fill amb pid = pid_fill.
 
