@@ -157,7 +157,7 @@ Aquesta crida a sistema s'utilitza per a esperar a un canvi d'estat d'un procés
 
 Executar aquesta comanda suspen l'execució del procés que fa la crida fins que un fill (especificat en el paràmetre _pid_) ha canviat d'estat. El paràmetre _pid_ pot ser:
 
-- **< -1 **  Espera qualsevol procés fill el qual tingui un ID de grup de processos igual que el 				 	valor absolut de _pid_.
+- **< -1**  Espera qualsevol procés fill el qual tingui un ID de grup de processos igual que el 				 	valor absolut de _pid_.
 - **-1**      Espera qualsevol procés fill.
 - **0**       Espera qualsevol procés fill que tingui un ID de grup de processos igual que al del procés que fa la crida _waitpid_.
 - **>0**     Espera el fill amb el PID igual a _pid_.
