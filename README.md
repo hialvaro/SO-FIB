@@ -166,6 +166,22 @@ El fill pot enviar informació de finalització (_exit code_) al pare a través 
 
 > Si un procés mor sense alliberar els PCBs dels fills, el procés init() del sistema ho farà.
 
+------
+
+### Signals
+
+Podem interpretar un signal com una notificació de que ha passat un event, i cada event té un signal associat.
+
+Cada procés té un tractament associat a cada signal el qual pot ser modificat [veure _sigaction_ a comandos].
+
+Per exemple el signal **SIGCONT** fa que un procés continuï si aquest estava parat; **SIGSTOP** fa parar el procés el qual el rep; **SIGCHLD** té un tractament predefinit de _IGNORE_ i notifica que el procés fill ha mort o ha estat parat; **SIGSEGV** indica una referència invàlida a memòria, coneguda també com Segmentation Fault; **SIGALRM** indica que el temps d'alarma ha acabat [veure _alarm_ a comandos] i el tractament és acabar el procés; **SIGKILL** fa acabar el procés també; **SIGINT** és un signal que té un tractament predefinit d'acabar i és donat a través de la combinació de tecles Ctrl+C en el shell.
+
+------
+
+### Màscares
+
+Són estructures de dades que permeten designar quins signals pot rebre un procés en un moment determinat de l'execució.
+
 ## COMANDOS
 
 #### fork();
@@ -213,6 +229,37 @@ _int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact
 - _signum_: especifica el signal, ha de ser un vàlid. (sigkill i sigstop no són vàlids).
 - _act_: Si és diferent de NULL, la nova acció per el signal _signum_ és instalada des de act.
 - _oldact_: Si és diferent de NULL, la acciò prèvia a la nova es guarda a _oldact_.
+
+L'struct _sigaction_ conté les variables següents:
+
+- **sa_handler**:
+  - *SIG_IGN* - Ignorarà el signal.
+  - *SIG_DFL* - Farà el tractament per defecte.
+  - *foo_whatever* - Funció que haurem creat per a tractar-lo.
+- **sa_mask**
+  - Buida, ja que només s'afegirà el signal que estem capturant.
+  - Es restaurarà l'anterior al acabar.
+- **sa_flags**
+  - **0** -> Configuració per defecte
+  - **SA_RESETHAND** -> després de tractar el signal es restaurarà el tractament per defecte.
+  - **SA_RESTART** -> Si estàs fent una crida al sistema i reps un signal, es reiniciarà la crida.
+
+```c
+void foo(int x){
+    //codi que executarà la funció.
+}
+
+struct sigaction s;
+/* Inicialitzem l'estructura de dades s amb:
+	handler -> Ha de contenir el nom de la funció que tractarà el signal.
+	mask -> una màscara que crearem
+	flags -> SA_RESTART
+*/
+
+sigaction(SIGUSR1, &sa, NULL);
+```
+
+
 
 ------
 
