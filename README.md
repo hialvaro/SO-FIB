@@ -1,3 +1,7 @@
+---
+
+---
+
 # Sistemes Operatius - Primer Parcial
 
 Un sistema operatiu és un programa que gestiona el hardware d'un ordinador. També proveeix una base per als programes com a intermediari entre l'usuari i el hardware. Els sistemes operatius estàn dissenyats per a ser _adequats_ a algunes tasques particulars, altres per a ser _eficients_ i altres una combinació de les dues.
@@ -49,7 +53,54 @@ Aquesta tècnica ens permet assegurar el sistema operatiu d'executar operacións
 
 
 
+## CONCEPTES
 
+### Que és un procés?
+
+Un procés és un programa en execució. Un programa és un algoritme escrit en un llenguatge de programació.
+
+Es pot afirmar que cada procés te la seva CPU virtual en el sentit que sempre es té una còpia d'ella. A aquesta CPU virtual, se li diu **Bloc de Control de Procés** (PCB), el qual es una estructura de dades que conté informació referent al procés, informació que necessita el Sistema Operatiu per a poder planificar els processos (assignar CPU i desallotjar-los [veure Round Robin]), això significa que cada procés té el seu propi PCB.
+
+- Cada vegada que un procés entra en estat d'execució (RUNNING) aquesta còpia s'utilitzarpa per a carregar la CPU amb els valors que permeten continuar aquest procés exactament des d'on va acabar l'anterior execució.
+- Cada vegada que un procés sigui parat per qualsevol cosa, s'han d'agafar els valors de la CPU per a actualitzar-los en el PCB.
+
+Algunes informacións del PCB són:
+
+- **Estat del procés**: Ready, Running o Blocked.
+- **PC (Contador de Programa)**: Conté la direcció de la següent instrucció a executar pel procés.
+- **Informació de planificació**: Aquesta informació conté: prioritat del procés, apuntadors a cues de planificació...
+- **Informació del sistema d'arxius**: Proteccións, identificacións d'usuari, grup...
+- **Informació de l'estat d'E/S**: Conté solicituds pendents d'E/S, dispositius d'E/S assignats al procés, etc...
+
+Per a fer ús del PCB el Sistema Operatiu utilitza una Taula de Processos, de manera que cada entrada en aquesta taula fa referència a un PCB.
+
+### Algoritme Round Robin
+
+És un algoritme de gestió i repartiment equitatiu i senzill de la CPU entre els processos que evita la monopolitzaició de la CPU molt utilitzat en entorns de **temps compartit** o **multitasking**.
+
+Consisteix en definir una unitat de temps petita, anomenada **quantum** la qual s'assigna a cada process per a que estigui en mode **READY**. Si el procés esgota el seu quantum (Q) de temps, s'escull un nou procés per a ocupar la CPU. Si el procés es bloqueja o acaba abans d'esgotar el seu quantum també s'alterna l'ús de la CPU.
+
+És per això que surgeix la necessitat d'un rellotge de sistema; un dispositiu que genera periòdicament interrupcións. El quantum d'un procés equival a un nombre fixe de cicles de rellotge. Al haver-hi una interrupció de rellotge, o (és el mateix) la fi d'un quantum es cedeix el control de la CPU al procés seleccionat per el planificador.
+
+Si el **quantum** és molt gran, els processos acabaràn els seus temps de CPU abans d'acabar el quantum.
+Si és molt petit, hi haurà molts canvis de processos i la CPU perdrà rendiment.
+
+| Processos | Temps d'execució |
+| :-------: | :--------------: |
+|    P1     |        53        |
+|    P2     |        17        |
+|    P3     |        68        |
+|    P4     |        24        |
+
+Anem a fer un exemple amb la taula que veiem a sobre:
+
+Per aquest exemple imaginarem 4 processos, amb els seus respectius temps d'execució i un Quantum (Q) de 20.
+
+Hem de tenir en compte que quan hi ha un _canvi de context_ (canvi de procés a la CPU) s'ha de guardar l'estat del procés que s'estava executant al PCB i llavros cargar a la CPU l'estat del PCB del nou procés.
+
+![statediagram](C:\Users\Alvaro\Desktop\so\img\statediagram.jpg)
+
+Imaginem que **P1** entra a la CPU amb un temps de 53, es carrega el seu PCB i el rellotge del sistema comença  contar, quan arriba a 20 es llança una interrupció de rellotge. Es treu **P1** de la CPU, s'actualitza el seu PCB i el procés torna a la cua de READY. Ara entrarà **P2** a la CPU, que era el següent en la llista de ready, un cop passat el seu temps d'execució ja que TE(P2) < Q acabarà el procés, **P2** haurà acabat i farà exit, per tant anirà a estat ZOMBI o TERMINATED. Ara entrarà el procés **P3** que necessita un imput per a continuar, un cop passats 10q demana l'entrada, s'actualitzarà el seu PCB i passa a la cua de processos BLOCKED o WAITING, i llavors entra **P4** a la CPU i passa el mateix que amb **P1**. Es va seguint l'algoritme fins que tots els processos han acabat.
 
 ## COMANDOS
 
