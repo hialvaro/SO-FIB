@@ -83,6 +83,7 @@ Aquest procés fill hereda les següents característiques del pare:
 - ID d'usuari i ID de grup
 - Variables d'entorn
 - Màscara de signals (sigmask)
+- PC del pare (continuarà al mateix lloc que el pare).
 
 I no herederà:
 
@@ -190,6 +191,8 @@ Són estructures de dades que permeten designar quins signals pot rebre un proc�
 
 El pare i el fill s'executaràn concurrent-ment ("a la vegada"), es duplicarà el codi del pare juntament amb la pila i les seves dades i s'assignaràn al fill.
 
+**El fill inicia la execució en el punt on estava el pare en el moment de la creació**, per tant el PC del fill és el mateix del pare.
+
 [Per saber més sobre processos fills veure apartat **Processos fills** a **CONCEPTES BÀSICS**]
 
 **Mutació**
@@ -205,6 +208,12 @@ _execlp_: Fa canviar (mutar) l'executable d'un procés per un altre executable (
   - Contadors d'ús intern, signals pendents, etc...
 - Es modifiquen aspectes relacionats amb l'executable o l'espai de direccións:
   - Es defineix per defecte la taula de signals (mask).
+
+**Valors de retorn**:
+
+- Si el fork ha tingut èxit, es retorna el PID del fill al pare.
+- Si el fork ha tingut èxit, es retorna 0 en el fill.
+- Si el fork ha fallat es retorna -1 al pare, i el fill no serà creat; _errno_ contindrà informació de l'error.
 
 ------
 
