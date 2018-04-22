@@ -74,6 +74,53 @@ Algunes informacións del PCB són:
 
 Per a fer ús del PCB el Sistema Operatiu utilitza una Taula de Processos, de manera que cada entrada en aquesta taula fa referència a un PCB.
 
+------
+
+### Procés fill
+
+És un procés creat a partir d'un fork(); des d'un altre procés. Aquest es crea en total semblança al procés pare. Quan un procés crea un altre, l'esquema de processos s'organitza en forma d'arbre. Cada procés té el seu PID propi, amés del PPID (PID del procés pare), els quals **són únics per a cada procés**.
+
+Aquest procés fill hereda les següents característiques del pare:
+
+- Codi, dades i pila
+- Programació dels signals
+- ID d'usuari i ID de grup
+- Variables d'entorn
+- Màscara de signals (sigmask)
+
+I no herederà:
+
+- Contadors interns
+- Alarmes pendents
+- Signals pendents
+
+------
+
+### Thread (Fils d'execució)
+
+Com hem dit, un procés és la unitat d'assignaicó de recursos d'un programa en execució. Entre aquests recursos trobem els **fils d'execució** (threads) d'un procés. Un **thread** és un mecanisme que permet a una aplicacio realitzar varies tasques a la vegada de manera concurrent. És la mateixa filosofia que utilitza el SO per a executar diferents processos a la vegada enfocat a executar subprocessos dins un mateix procés; però és una mica diferent ja que per definició **els processos no comparteixen espai de memòria entre ells**, en canvi els threads si.
+
+Imaginem tres processos, **A, B i C** executant-se a la mateixa vegada. Què passaria si el procés A, necessités mostrar una interfaç gràfica i a la vegada estar escribint un arxiu? Sense els threads això no seria possible. La idea del thread és permetre que el procés pugui executar una o més tasques a la vegada (o al menys que així ho vegi l'usuari ;) ), de tal manera que cada vegada que a un procés li correspon un **quantum** d'execució del sistema, aquest alterni entre una de les seves tasques o una altre.
+
+Això ens dona la necessitat de reestructurar el concepte de procés, ja que un procés ara no és **la unitat mínima d'execució**, ara un procés és un conjunt de threads. Quan un procés, aparentment, no utilitza threads; està executant **un únic thread**.
+
+Hem de tenir en compte dues coses:
+
+- La memòria de treball del procés, segueix siguent assignada **per procés**, però els threads dins el procés comparteixen tots la mateixa regió de memòria, el mateix espai de direccións.
+- El SO assigna Quantums a cada thread creat, i ja no calendaritza processos sinó cada un dels threads en execució al sistema.
+- Cada thread té el seu propi context (estat d'execució), així que cada vegada que es suspen un thread per a permetre l'execució d'un altre, el seu contexte es guarda i es reestableix novament només quan és el seu torn [veure Round Robin més avall].
+
+El procés segueix sent una part important ja que és qui se li assigna la prioritat d'execució, la memòria i els recursos, privilegis i altres dades importants. El thread és només qui s'executa.
+
+Imaginem un sistema amb **2 CPU** i una aplicació que executa més de dos threads:
+El què passarà és que només dos threads s'estaràn executant en paralel en un moment donat, i el sistema operatiu alternarà l'execució d'aquests threads de tal manera que tots tinguin Quantums assingats, però només hi haurà **2 threads en paralel**.
+
+------
+
+### Estats d'un procés i Propietats
+
+------
+
 ### Algoritme Round Robin
 
 És un algoritme de gestió i repartiment equitatiu i senzill de la CPU entre els processos que evita la monopolitzaició de la CPU molt utilitzat en entorns de **temps compartit** o **multitasking**.
@@ -98,13 +145,15 @@ Per aquest exemple imaginarem 4 processos, amb els seus respectius temps d'execu
 
 Hem de tenir en compte que quan hi ha un _canvi de context_ (canvi de procés a la CPU) s'ha de guardar l'estat del procés que s'estava executant al PCB i llavros cargar a la CPU l'estat del PCB del nou procés.
 
-![statediagram](img/statediagram.jpg)
+![statediagram](img\statediagram.jpg)
 
 Imaginem que **P1** entra a la CPU amb un temps de 53, es carrega el seu PCB i el rellotge del sistema comença  contar, quan arriba a 20 es llança una interrupció de rellotge. Es treu **P1** de la CPU, s'actualitza el seu PCB i el procés torna a la cua de READY. Ara entrarà **P2** a la CPU, que era el següent en la llista de ready, un cop passat el seu temps d'execució ja que TE(P2) < Q acabarà el procés, **P2** haurà acabat i farà exit, per tant anirà a estat ZOMBI o TERMINATED. Ara entrarà el procés **P3** que necessita un imput per a continuar, un cop passats 10q demana l'entrada, s'actualitzarà el seu PCB i passa a la cua de processos BLOCKED o WAITING, i llavors entra **P4** a la CPU i passa el mateix que amb **P1**. Es va seguint l'algoritme fins que tots els processos han acabat.
 
 ## COMANDOS
 
+#### fork();
 
+> Crea un procés fill
 
 ### <u>SIGNALS</u>
 
