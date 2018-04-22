@@ -98,7 +98,7 @@ Per aquest exemple imaginarem 4 processos, amb els seus respectius temps d'execu
 
 Hem de tenir en compte que quan hi ha un _canvi de context_ (canvi de procés a la CPU) s'ha de guardar l'estat del procés que s'estava executant al PCB i llavros cargar a la CPU l'estat del PCB del nou procés.
 
-![statediagram](C:\Users\Alvaro\Desktop\so\img\statediagram.jpg)
+![statediagram](img/statediagram.jpg)
 
 Imaginem que **P1** entra a la CPU amb un temps de 53, es carrega el seu PCB i el rellotge del sistema comença  contar, quan arriba a 20 es llança una interrupció de rellotge. Es treu **P1** de la CPU, s'actualitza el seu PCB i el procés torna a la cua de READY. Ara entrarà **P2** a la CPU, que era el següent en la llista de ready, un cop passat el seu temps d'execució ja que TE(P2) < Q acabarà el procés, **P2** haurà acabat i farà exit, per tant anirà a estat ZOMBI o TERMINATED. Ara entrarà el procés **P3** que necessita un imput per a continuar, un cop passats 10q demana l'entrada, s'actualitzarà el seu PCB i passa a la cua de processos BLOCKED o WAITING, i llavors entra **P4** a la CPU i passa el mateix que amb **P1**. Es va seguint l'algoritme fins que tots els processos han acabat.
 
