@@ -77,6 +77,8 @@ _int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact
 - _act_: Si és diferent de NULL, la nova acció per el signal _signum_ és instalada des de act.
 - _oldact_: Si és diferent de NULL, la acciò prèvia a la nova es guarda a _oldact_.
 
+------
+
 #### kill
 
 > Envia un signal a un procés.
@@ -85,6 +87,8 @@ _kill [opcións] \<pid> [...]_
 
 El signal per defecte de kill és TERM. Altres sinals poden ser especifcats amb -\<signal>; per exemple 
 -SIGKILL, -9 o -KILL.
+
+------
 
 #### sigsuspend
 
@@ -104,6 +108,8 @@ Si pid és < -1 llavors sig s'envia a tots els processos del grup de processos e
 
 - Si el signal acaba -> No hi ha retorn.
 - Si s'ha fet restore de la signal mask a l'estat d'abans de la crida -> Sisgsuspend sempre retorna -1 (amb errno).
+
+------
 
 #### sigprocmask
 
@@ -129,6 +135,8 @@ Si _oldset_ no és null, s'hi guardarà el valor previ de la mascara de signals.
 mask = vector de signals activats i desactivats.
 int sigprocmask(SIG_BLOCK, mask, NULL);
 
+------
+
 #### alarm
 
 > Programa l'enviament d'un SIGALARM després d'x segons.
@@ -138,6 +146,8 @@ _unsigned int alarm(unsigned int x)_;
 Si _x_ és zero, totes les alarmes pendents són cancelades, en tots els events.
 alarm() retorna el nombre de segons restants abans que qualsevol alarma anterior està prevista de disparar-se. Si no hi havia alarmes anteriors, retorna zero.
 
+------
+
 #### sleep
 
 > Bloqueja un procés durant el temps que es passa per al paràmetre.
@@ -145,9 +155,13 @@ alarm() retorna el nombre de segons restants abans que qualsevol alarma anterior
 _sleep_ NUMBER[SUFFIX]...
 _SUFFIX_: s (seconds), m (minutes), h (hours), d (days)
 
+------
+
 #### kill
 
 Envia un event concret a un procé.
+
+------
 
 #### waitpid
 
@@ -157,7 +171,7 @@ Aquesta crida a sistema s'utilitza per a esperar a un canvi d'estat d'un procés
 
 Executar aquesta comanda suspen l'execució del procés que fa la crida fins que un fill (especificat en el paràmetre _pid_) ha canviat d'estat. El paràmetre _pid_ pot ser:
 
-- **< -1**  Espera qualsevol procés fill el qual tingui un ID de grup de processos igual que el 				 	valor absolut de _pid_.
+- **< -1 **  Espera qualsevol procés fill el qual tingui un ID de grup de processos igual que el 				 	valor absolut de _pid_.
 - **-1**      Espera qualsevol procés fill.
 - **0**       Espera qualsevol procés fill que tingui un ID de grup de processos igual que al del procés que fa la crida _waitpid_.
 - **>0**     Espera el fill amb el PID igual a _pid_.
