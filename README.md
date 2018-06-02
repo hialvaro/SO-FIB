@@ -387,3 +387,53 @@ EXEMPLES MÉS COMUNS:
 - waitpid(-1, NULL, 0) --> Esperar (amb bloqueig si és necessari) a un fill qualsevol.
 - waitpid(pid_fill, NULL, 0) --> Esperar (amb bloqueig si és necessari) a un fill amb pid = pid_fill.
 
+# SISTEMES OPERATIUS - PARCIAL 2
+
+## Accessos a Disc
+
+### Inode
+
+Un inode conté tota l'infomació bàsica d'un fitxer (tamany, propietari, permisos, etc.). Per simplificar-ho, a SO només utilitzem els camps següents:
+
+- Nombre de Referències
+- Tipus (d, l, -) [D = directori, l = softlink, - = "normal"]
+- Llista de blocs de dades de l'inode
+
+| INODE                                                        |
+| :----------------------------------------------------------- |
+| Nombre de Referències (míinim 1)                             |
+| d, l, -                                                      |
+| Nº de Bloc (Si ocupa més d'un, es van posant consecutivament; simulem que ocupa 2 o més). |
+| Nº de bloc                                                   |
+| etc....                                                      |
+
+### EXEMPLE D'ACCES A DISC
+
+Primer, veurem una mica de detalls del **sistema de fitxers**, farem tots els passos, donat un sistema de fitxers: Generar els inodes i blocs de dades equivalents i calcularem els accessos a disc per a dos codis diferents. Suposarem el següent sistema d'arxius basat en inodes: 
+
+**Colocar imatge sistema arxius**
+
+Podem deduïr d'aquest sistema d'arxius (i perquè ens ho diuen en l'enunciat normalment):
+
+- Els quadrats són directoris.
+- Els rodons són altres tipus d'arxius.
+  - /appl/usr1 és un softlink a /home/usr1
+  - /home/usr1/F1.txt i /home/usr1/F2.txt són hardlinks.
+- Un inode ocupa 1 bloc.
+- F1.txt ocupa 5 blocs de dades.
+- 1 bloc de dades són 256 bytes.
+- Els fitxers "." i ".." no estàn dibuixats per a simplificar.
+
+### Hard links i softlinks
+
+Hardlinks i softlinks són dos mètodes d'enllaçar noms de fitxers amb inode, dos tipus de vincles.
+
+- **Hardlink**: Enllaça el nom amb un inode de tipus "normal" (fitxer de dades), en les dades d'aquest inode hi ha les dades a les quals volem accedir. Apunten a un arxiu en el sistema d'arxius; associen dos o més fitxer compartint el mateix inode, això fa que cada hardlink sigui una còpia exacta de la resta de fitxers associats, tant de dades com de permisos, propietari... Encara que els anomenem de diferentes formes, tant els hardlinks com els arxius originals ofereixen la mateixa funcionalitat. Al modificar les dades apuntades per a qualsevol d'ells, es canvien les dades reals emmagatzemades al disc, quedant modificats els dos per igual.
+  - Quan tenim N noms de fitxers que són hardlinks (entenem que al mateix inode), siginifca que tenen el mateix nombre de inode; són directament el mateix fitxer. F1.txt i F2.txt han de tindre el mateix nombre de inode.
+
+#### Exemple de Hardlink
+
+En l'imatge de sota (extreta de Wikipedia) hi ha dos HardLinks: "Enlace1.txt" i "Enlace2.txt". Els dos apunten a les mateixes dades físiques. Si el nom de fitxer "Enlace1.txt" s'obra en un editor de text, es modifica i es guarda, aquests canvis seràn també visibles en el fitxer "Enlace2.txt" i viceversa. Això es degut a que apunten a les mateixes dades.
+
+**IMATGE HARDLINK SVG**
+
