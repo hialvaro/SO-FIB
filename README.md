@@ -437,3 +437,105 @@ En l'imatge de sota (extreta de Wikipedia) hi ha dos HardLinks: "Enlace1.txt" i 
 
 ![hardlink](img/Enlace_duro.svg)
 
+Tornant al esquema del sistema d'arxius que hem vist, anem a definir com queden la taula d'inodes (en el disc) i els blocs de dades:
+
+- Primer hem d'assignar nombres d'inode als fitxers seqüencialment de 0 ... a N.
+- F1.txt i F2.txt recordem que son hardlinks a un mateix arxiu, i per tant han de tenir el mateix inode.
+- Els enumerem seguint l'ordre de creació (ens ho inventem), però podriem seguir altres mètodes d'enumeració, tot i que es recomana utilitzar una enumeració llògica i clara.
+
+**IMATGE ESQUEMA ENUMERAT^**
+
+### INFORMACIÓ EN EL DISC
+
+- Metadades (taula de inodes).
+  - Dades com tipus de fitxer, nombre d'enllaços (incloent . i ..) i llista de blocs de dades.
+- Dades (blocs de dades).
+  - Els blocs que són directoris, softlinks i blocs de fitxers de dades.
+
+### BLOCS DE DADES
+
+| Directori:                                                 | Softlink:                                                    | Dades "normals"                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| És una taula (nom, inode). <br />Exemple: /home/usr1<br /> | Posem el path (camí) del fitxer al qual apunta:<br />Exemple: /appl/usr1 | Si tenim l'informació la podem posar, sinó indicada:<br />Exemple: F1.txt conté a's. |
+
+#### Com quedaria? [INODES]
+
+| Nº Inode                | 0       | 1    | 2    | 3    | 4    | 5    | 6       |
+| ----------------------- | ------- | ---- | ---- | ---- | ---- | ---- | ------- |
+| Nº Refs                 | *\*(1)* |      |      |      |      |      |         |
+| Tipus (d, l, -) *\*(2)* | d       | d    | d    | d    | d    | l    | -       |
+| Bloc 1                  | 0       | 1    | 2    | 3    | 4    | 5    | 6 \*(3) |
+| Bloc 2                  |         |      |      |      |      |      | 7       |
+| Bloc 3                  |         |      |      |      |      |      | 8       |
+| Bloc 4                  |         |      |      |      |      |      | 9       |
+| Bloc 5                  |         |      |      |      |      |      | 10      |
+
+\*(1) El nombre de referències l'emplenem al final.
+
+\*(2) Del bloc 0 al 4, són directoris. El 5 és un softlink. I el 6 és un fitxer de dades.
+
+\*(3) Els directoris ocupen 1 bloc, el soft-link també, el fitxer F1.txt i F2.txt comparteixen inode i ocupen 5 blocs.
+
+### Blocs de dades (En necessitem 11: 0...10)
+
+[Imatge bloc de dades]
+
+- Els directoris tenen dues columnes: Nom del fitxer i el nombre d'inode.
+- Han de tindre semre els fitxers "." i ".."
+- El soft-link ha de contenir el nom del fitxer al que apunta, ja que és un inode diferent.
+- Els noms F1.txt i F2.txt són simplement el mateix inode (ja que són hard-links)
+- Se suposa que hi ha 256 bytes en cada bloc de dades
+
+Resultat final (amb les referències).
+
+| Nº Inode        | 0    | 1    | 2    | 3    | 4    | 5    | 6    |
+| --------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Nº Refs         | 4    | 4    | 2    | 2    | 2    | 1    | 2    |
+| Tipus (d, l, -) | d    | d    | d    | d    | d    | l    | -    |
+| Bloc 1          | 0    | 1    | 2    | 3    | 4    | 5    | 6    |
+| Bloc 2          |      |      |      |      |      |      | 7    |
+| Bloc 3          |      |      |      |      |      |      | 8    |
+| Bloc 4          |      |      |      |      |      |      | 9    |
+| Bloc 5          |      |      |      |      |      |      | 10   |
+
+### EXERCICI D'EXEMPLE
+
+```c
+fd = open("/Home/Usr1/F1.txt", O_RDONLY);
+ret = read(fd, &c, sizeof(char));
+while(ret > 0){
+    write(1, &c, sizeof(char));
+    ret = read(fd, &c, sizeof(char));
+}
+close(fd);
+```
+
+- Com es tradueix?
+  - Hem d'accedir a l'inode de F1.txt i copiarlo a la taula d'inodes a memòria: accés al disc.
+  - Llegir tot el contingut de F1.txt: Accessos a disc (byte a byte).
+  - Hem d'escriure el que hem llegit per la sortida std.
+
+1. fd = open("/Home/Usr1/F1.txt", O_RDONLY);
+
+   - Amb buffer caché: Tot el que llegim es guarda a la buffer cache (els inodes ocupen 1 bloc de disc):
+     1. Llegim l'inode arrel (0).
+     2. Llegim les dades de l'inode arrel (bloc de dades 0); veiem que "home" és l'inode 1.
+     3. Llegim l'inode 1 (Home)
+     4. Llegim les dades de l'inode 1 (bloc de dades 1); veiem que Usr1  es l'inode 3.
+     5. Llegim l'inode 3.
+     6. Llegim les dades de l'inode 3 (bloc de dades 3); Veiem que F1.txt es l'inode 6.
+     7. Llegim l'inode 6; inode destí; ho copiem en la taula d'inodes a memòria.
+
+   2 i 5. ret = read(fd, &c, sizeof(char));
+
+   - S'executen 256*5 crides a sistema (hi ha 5 blocs de dades) per a llegir les dades.
+     - Si hi ha buffer cache farem 5 accessos al disc.
+     - D'altre manera farem 256*5 accessos a disc.
+   - Farem un últim read per a detectar que hem arribat al final (el read que retorna 0).
+
+3.write(1, &c, sizeof(char));
+
+- Si el canal 1 és la consola : no genera accessos a disc.
+
+7. close(fd);
+   - Com no hem modificat l'inode no fa falta escriure'l a disc.
