@@ -411,7 +411,7 @@ Un inode conté tota l'infomació bàsica d'un fitxer (tamany, propietari, permi
 
 Primer, veurem una mica de detalls del **sistema de fitxers**, farem tots els passos, donat un sistema de fitxers: Generar els inodes i blocs de dades equivalents i calcularem els accessos a disc per a dos codis diferents. Suposarem el següent sistema d'arxius basat en inodes: 
 
-![filesist](img/sistfitx.jpg)
+![filesist](img/sistfitx.png)
 
 Podem deduïr d'aquest sistema d'arxius (i perquè ens ho diuen en l'enunciat normalment):
 
