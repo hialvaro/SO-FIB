@@ -411,7 +411,7 @@ Un inode conté tota l'infomació bàsica d'un fitxer (tamany, propietari, permi
 
 Primer, veurem una mica de detalls del **sistema de fitxers**, farem tots els passos, donat un sistema de fitxers: Generar els inodes i blocs de dades equivalents i calcularem els accessos a disc per a dos codis diferents. Suposarem el següent sistema d'arxius basat en inodes: 
 
-**Colocar imatge sistema arxius**
+![filesist](img/sistfitx.jpg)
 
 Podem deduïr d'aquest sistema d'arxius (i perquè ens ho diuen en l'enunciat normalment):
 
@@ -435,5 +435,5 @@ Hardlinks i softlinks són dos mètodes d'enllaçar noms de fitxers amb inode, d
 
 En l'imatge de sota (extreta de Wikipedia) hi ha dos HardLinks: "Enlace1.txt" i "Enlace2.txt". Els dos apunten a les mateixes dades físiques. Si el nom de fitxer "Enlace1.txt" s'obra en un editor de text, es modifica i es guarda, aquests canvis seràn també visibles en el fitxer "Enlace2.txt" i viceversa. Això es degut a que apunten a les mateixes dades.
 
-**IMATGE HARDLINK SVG**
+![hardlink](img/Enlace_duro.svg)
 
